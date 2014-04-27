@@ -6,6 +6,15 @@ This project contains a variety of components that we use in projects at
 [HathiTrust Digital Library](http://www.hathitrust.org/) and to parse and
 manipulate HathiTrust volume data and metadata.
 
+Project organization
+--------------------
+
+The [`edu.umd.mith.util`](https://github.com/umd-mith/hathi/tree/master/util/src/main/scala/util)
+package in the `util` project contains a number of generally useful tools for
+developing API clients, working with Pairtree structures, etc. The
+[`core`](https://github.com/umd-mith/hathi/tree/master/core) project includes
+all HathiTrust-specific code.
+
 Bibliographic API client
 ------------------------
 
@@ -16,7 +25,7 @@ record and volume level metadata, including
 download the metadata for a batch of volume identifiers. See the
 [`BibDownloader`](https://github.com/umd-mith/hathi/blob/master/core/src/main/scala/hathi/api/bib/cli/driver.scala)
 class for a simple example that will generally provide all the functionality you
-need to access this API.
+need when working with this API.
 
 The client sleeps for random periods between requests, and will retry failed
 requests with exponential backoff.
@@ -34,8 +43,10 @@ The API uses the
 [one-legged OAuth](https://github.com/Mashape/mashape-oauth/blob/master/FLOWS.md#oauth-10a-one-legged)
 authentication mechanism (note that the HathiTrust documentation describes this
 as two-legged OAuth, but we follow what appears to be the more standard naming),
-and all requests must be signed. We provide an implementation of the signing
-mechanism that works with [Dispatch](http://dispatch.databinder.net/Dispatch.html),
+and all requests must be signed. We provide
+[an implementation](https://github.com/umd-mith/hathi/blob/master/util/src/main/scala/util/oauth.scala)
+of the signing mechanism that works with
+[Dispatch](http://dispatch.databinder.net/Dispatch.html),
 a Scala HTTP client library.
 
 See the [`DataDownloader`](https://github.com/umd-mith/hathi/blob/master/core/src/main/scala/hathi/api/data/cli/driver.scala)
@@ -44,11 +55,22 @@ class for an example of usage.
 This client also by defaults provides retries for failures that are not related
 to authorization.
 
+METS
+----
+
+The HathiTrust uses the [Metadata Encoding and Transmission Standard](https://github.com/umd-mith/hathi/blob/master/util/src/main/scala/util/oauth.scala)
+to describe the files that make up a volume. The METS files are available both
+through the Bibliographic API and in batch data sets. We provide a METS file
+parser that is aware of the conventions of the HathiTrust's use of the standard.
+
 Pairtrees
 ---------
 
-The HathiTrust uses Pairtrees to store volume data and page-level metadata. We
-provide a number of tools for working with Pairtree structures.
+The HathiTrust uses [Pairtrees](http://stackoverflow.com/a/23326372/334519) to
+store volume data and page-level metadata. We provide a number of tools for
+working with Pairtree structures, including
+[an implementation](https://github.com/umd-mith/hathi/blob/master/util/src/main/scala/util/pairtree.scala)
+of the path escaping and unescaping mechanism.
 
 License
 -------
