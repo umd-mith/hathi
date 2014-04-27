@@ -72,6 +72,66 @@ working with Pairtree structures, including
 [an implementation](https://github.com/umd-mith/hathi/blob/master/util/src/main/scala/util/pairtree.scala)
 of the path escaping and unescaping mechanism.
 
+Usage examples
+--------------
+
+Suppose we've got a list of volume identifiers in a file—e.g. something like
+this:
+
+```
+loc.ark:/13960/t05x2xb7f
+nyp.33433081859120
+dul1.ark:/13960/t5j970j9d
+```
+
+And we wanted to download the metadata records for these volumes from the
+Bibliographic API. We could compile the project like this (note that this
+requires you to have [Java](http://www.java.com/) 6 or newer installed; there
+are no other dependencies):
+
+``` bash
+./sbt assembly
+```
+
+And then run the `BibDownloader` application:
+
+``` bash
+java -cp core/target/scala-2.10/hathi-core-assembly-0.0.0-SNAPSHOT.jar \
+  edu.umd.mith.hathi.api.bib.cli.BibDownloader volume-list.txt output
+```
+
+This would create an `output` directory that would contain a file `failed.txt`
+listing all volumes that could not be downloaded because of failed requests,
+another file `missing` listing all volumes that did not have results, and a
+`results` directory. In this case `missing.txt` and `failed.txt` are empty, and
+`results` contains three JSON files (one for each of the volumes in our list).
+
+Now suppose we want to download all of the _data_ (as opposed to metadata) for
+one of these volumes. We'd first create a `.hathitrustrc` file in our home
+directory containing our consumer key and secret (the following is fake):
+
+```
+ec8b4b8e6b
+105bf9f122496b2fce1c17117ef3
+```
+
+Now we run the `DataDownloader` application:
+
+``` bash
+java -cp core/target/scala-2.10/hathi-core-assembly-0.0.0-SNAPSHOT.jar \
+  edu.umd.mith.hathi.api.data.cli.DataDownloader loc.ark:/13960/t05x2xb7 output
+```
+
+Now we also have `loc.ark+=13960=t05x2xb7f.mets.xml` and
+`loc.ark+=13960=t05x2xb7f.zip` files in our `output` directory. If we unzip
+the latter, we'll find all of the [JPEG-2000](https://en.wikipedia.org/wiki/JPEG_2000)
+images, [DjVu](http://djvu.org/) XML OCR coordinate files, and text files for
+this volume.
+
+Note that while we provide a few simple command-line applications, this project
+is designed primarily to be used as a library, and most of its functionality is
+not exposed through applications.
+
 License
 -------
 
