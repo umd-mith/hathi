@@ -102,7 +102,7 @@ java -cp core/target/scala-2.10/hathi-core-assembly-0.0.0-SNAPSHOT.jar \
 
 This would create an `output` directory that would contain a file `failed.txt`
 listing all volumes that could not be downloaded because of failed requests,
-another file `missing` listing all volumes that did not have results, and a
+another file `missing.txt` listing all volumes that did not have results, and a
 `results` directory. In this case `missing.txt` and `failed.txt` are empty, and
 `results` contains three JSON files (one for each of the volumes in our list).
 
