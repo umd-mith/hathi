@@ -52,7 +52,7 @@ a Scala HTTP client library.
 See the [`DataDownloader`](https://github.com/umd-mith/hathi/blob/master/core/src/main/scala/hathi/api/data/cli/driver.scala)
 class for an example of usage.
 
-This client also by defaults provides retries for failures that are not related
+This client also by default provides retries for failures that are not related
 to authorization.
 
 METS
