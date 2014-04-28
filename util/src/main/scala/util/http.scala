@@ -50,7 +50,7 @@ trait DispatchUtils {
     (implicit ec: ExecutionContext, timer: Timer): Future[A] =
     reqWithRetries(backoffDelay, backoffMaxRetries)(req).flatMap { response =>
       Parse.decodeEither[A](as.String(response)).fold(
-        msg => Future.failed(ArgonautError(msg)),
+        msg => Future.failed(ArgonautUtils.ArgonautError(msg)),
         Future.successful(_)
       )
     }

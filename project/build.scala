@@ -41,14 +41,15 @@ object HathiBuild extends Build {
     libraryDependencies ++= testDependencies ++ Seq(
       "commons-lang" % "commons-lang" % "2.6",
       "io.argonaut" %% "argonaut" % "6.0.4",
+      "joda-time" % "joda-time" % "2.3",
       "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
+      "org.joda" % "joda-convert" % "1.6",
       "org.marc4j" % "marc4j" % "2.6-SNAPSHOT",
       "org.slf4j" % "slf4j-simple" % "1.7.6",
       "org.scalesxml" %% "scales-xml" % "0.6.0-M1",
       "org.scalaz" %% "scalaz-core" % "7.0.6",
       "org.scalaz" %% "scalaz-concurrent" % "7.0.6",
-      "org.scalaz.stream" %% "scalaz-stream" % "0.4.1",
-      "org.typelevel" %% "shapeless-scalaz" % "0.2"
+      "org.scalaz.stream" %% "scalaz-stream" % "0.4.1"
     )
   )
 

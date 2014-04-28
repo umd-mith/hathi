@@ -1,14 +1,26 @@
 package edu.umd.mith.hathi
 
 import edu.umd.mith.util.PairtreeParser
+import edu.umd.mith.util.marc.MarcRecord
+import java.net.URL
+import org.joda.time.LocalDate
+import org.joda.time.format.DateTimeFormat
+import scalaz.{ Ordering => _, _ }, Scalaz._
 
-case class Record(id: String)
+/** Represents a HathiTrust record identifier.
+  */
+case class RecordId(id: String)
+
+/** Represents a HathiTrust volume identifier.
+  */
 case class Htid(library: String, id: String) {
   override def toString() = s"$library.$id"
   def toFileName = s"$library.${ PairtreeParser.Default.cleanId(id) }"
   def idToFileName = PairtreeParser.Default.cleanId(id)
 }
 
+/** Utilities and instances for HathiTrust volume identifiers.
+  */
 object Htid {
   def parse(s: String) = s.split("\\.").toList match {
     case List(id) => Htid("", id)
@@ -19,6 +31,8 @@ object Htid {
   }
 }
 
+/** Represents metadata for a single page.
+  */
 trait PageMetadata {
   def textPath: String
   def imagePath: String
@@ -46,3 +60,50 @@ trait PageMetadata {
   override def toString: String =
     s"""$textPath: $seq${ number.fold("")(n => " (" + n + ")") }"""
 }
+
+/** Represents metadata for a HathiTrust record.
+  */
+case class RecordMetadata(
+  id: RecordId,
+  url: URL,
+  titles: List[String],
+  isbns: List[String],
+  issns: List[String],
+  oclcs: List[String],
+  publishDates: List[String],
+  marc: MarcRecord
+)
+
+/** Represents metadata for a HathiTrust volume.
+  */
+case class VolumeMetadata(
+  url: URL,
+  htid: Htid,
+  orig: String,
+  record: RecordMetadata,
+  rights: String,
+  lastUpdate: Updated,
+  enumcron: Option[String],
+  usRights: String
+)
+
+/** Represents a date that a volume was updated.
+  */
+case class Updated(date: Option[LocalDate]) {
+  override def toString = date.fold("00000000")(Updated.format.print)
+}
+
+/** Data parsing utilities.
+  */
+object Updated {
+  val format = DateTimeFormat.forPattern("yyyyMMdd")
+
+  def parseLocalDate(s: String): Throwable \/ LocalDate =
+    \/.fromTryCatch(format.parseLocalDate(s))
+}
+
+/** Represents an identifier for a volume in a record.
+  */
+sealed trait Enumcron
+case class BooleanEnumcron(value: Boolean) extends Enumcron
+case class OtherEnumcron(value: String) extends Enumcron

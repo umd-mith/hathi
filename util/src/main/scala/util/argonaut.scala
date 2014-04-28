@@ -3,12 +3,16 @@ package edu.umd.mith.util
 import argonaut._, Argonaut._
 import java.net.URL
 import org.apache.commons.lang.StringEscapeUtils.unescapeJavaScript
+import scala.concurrent.duration.Duration
 import scalaz.\/
 import scalaz.concurrent.Task
 
-case class ArgonautError(msg: String) extends Exception(msg)
+object ArgonautUtils {
+  case class ArgonautError(msg: String) extends Exception(msg)
+}
 
 trait ArgonautUtils {
+
   def disjunctionToResult[A](h: CursorHistory)(t: Throwable \/ A): DecodeResult[A] =
     t.fold(
       e => DecodeResult.fail(e.getMessage, h),
