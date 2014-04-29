@@ -134,8 +134,8 @@ Many interfaces expose methods returning values of type `Throwable \/ A`, for
 some type `A`. The `\/` here is a disjunction type from
 [Scalaz](https://github.com/scalaz/scalaz), a library designed to support
 functional programming in Scala. It is roughly equivalent to the Scala standard
-library's [Either](http://www.scala-lang.org/api/2.10.4/index.html#scala.util.Either),
-and can be converted to an either through its `toEither` method.
+library's [`Either`](http://www.scala-lang.org/api/2.10.4/index.html#scala.util.Either),
+and can be converted to an `Either` through its `toEither` method.
 
 Like `Either`, `\/` is often used to represent computations that may fail. If
 we're validating that a string can be parsed into an integer, for example, it's
