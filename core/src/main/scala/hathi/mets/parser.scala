@@ -149,23 +149,17 @@ class MetsFileParser(val doc: Doc) extends MetsModel {
           )
         )
 
-        ocr <- (page \* metsNs("fptr") \@ "FILEID").toList.map(
+        ocr = (page \* metsNs("fptr") \@ "FILEID").toList.map(
           _.attribute.value
         ).filter(
           fileId => fileId.startsWith("HTML") || fileId.startsWith("XML")
-        ).headOption.toRightDisjunction(
-          error("Missing OCR file identifier.")
-        ).flatMap(fileId =>
-          fileMap.get(fileId).toRightDisjunction(
-            error(s"""Missing path for "$fileId".""")
-          )
-        )
+        ).headOption.flatMap(fileMap.get)
       } yield new PageMetadata {
         val textPath = pageTextPath
         val imagePath = image._1
         val imageMimeType = image._2
-        val ocrPath = ocr._1
-        val ocrMimeType = ocr._2
+        val ocrPath = ocr.map(_._1)
+        val ocrMimeType = ocr.map(_._2)
         val seq = order
         val number = orderLabel
         val allLabels = labels

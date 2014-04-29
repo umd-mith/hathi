@@ -37,8 +37,8 @@ trait PageMetadata {
   def textPath: String
   def imagePath: String
   def imageMimeType: String
-  def ocrPath: String
-  def ocrMimeType: String
+  def ocrPath: Option[String]
+  def ocrMimeType: Option[String]
   def seq: String
   def number: Option[String]
   def allLabels: Set[String]
