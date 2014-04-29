@@ -66,11 +66,102 @@ parser that is aware of the conventions of the HathiTrust's use of the standard.
 Pairtrees
 ---------
 
-The HathiTrust uses [Pairtrees](http://stackoverflow.com/a/23326372/334519) to
+The HathiTrust uses [Pairtrees](https://wiki.ucop.edu/display/Curation/PairTree) to
 store volume data and page-level metadata. We provide a number of tools for
 working with Pairtree structures, including
 [an implementation](https://github.com/umd-mith/hathi/blob/master/util/src/main/scala/util/pairtree.scala)
 of the path escaping and unescaping mechanism.
+
+Data structures
+---------------
+
+A [`Dataset`](https://github.com/umd-mith/hathi/blob/master/core/src/main/scala/hathi/dataset.scala)
+represents a set of Pairtree structures (one for each library) containing METS
+files and zipped text files in the form delivered by the HathiTrust over
+Rsync or through some other bulk data transfer method (not the Data API). A
+`Dataset` is constructed by pointing at the root directory containing the
+library directories, and can be queried by volume identifier to get the pair of
+files (METS and zipped text) for a volume, or to get a list of pages with
+metadata directly.
+
+A [`Collection`](https://github.com/umd-mith/hathi/blob/master/core/src/main/scala/hathi/collection.scala)
+represents a `Dataset` together with a directory containing the JSON metadata
+files for the volumes contained of the `Dataset`. A `Collection` can be queried
+by volume identifier and will return both a list of pages and the volume
+metadata.
+
+Language and library API design
+-------------------------------
+
+These components are written in [Scala](http://www.scala-lang.org/), a language
+that runs on the Java Virtual Machine, and they can be used from Java code. For
+example, you could write the following to find a volume in a collection:
+
+``` java
+import edu.umd.mith.hathi.Collection;
+import edu.umd.mith.hathi.Htid;
+import edu.umd.mith.hathi.Volume;
+import java.io.File;
+import scala.util.Either;
+
+public class JavaDemo {
+  public static void main(String[] args) throws Throwable {
+    Collection collection = new Collection(
+      new File("collection/metadata/"),
+      new File("collection/data")
+    );
+
+    String volumeId = "dul1.ark:/13960/t5j970j9d";
+
+    Either<Throwable, Volume> volumeOrError =
+      collection.volume(Htid.parse(volumeId)).toEither();
+
+    Volume volume;
+
+    if (volumeOrError.isLeft()) {
+      throw volumeOrError.left().get();
+    } else {
+      volume = volumeOrError.right().get();
+    }
+  }
+}
+```
+
+While this is not as concise as the equivalent Scala code would be, it's still
+reasonably clear.
+
+Many interfaces expose methods returning values of type `Throwable \/ A`, for
+some type `A`. The `\/` here is a disjunction type from
+[Scalaz](https://github.com/scalaz/scalaz), a library designed to support
+functional programming in Scala. It is roughly equivalent to the Scala standard
+library's [Either](http://www.scala-lang.org/api/2.10.4/index.html#scala.util.Either),
+and can be converted to an either through its `toEither` method.
+
+Like `Either`, `\/` is often used to represent computations that may fail. If
+we're validating that a string can be parsed into an integer, for example, it's
+often not appropriate (or at least not ideal) to throw an exception on invalid
+input, since that may not truly represent an "exceptional" situation. Instead
+we can return a value of type `Either[Throwable, Int]` or `Throwable \/ Int`,
+with the possible exception in the left side of the disjunction or the
+successfully parsed value in the right side.
+
+We use `\/` in many places here instead of `Either` because it allows _monadic_
+composition. For example, we can write the following:
+
+``` scala
+def computeInt: Throwable \/ Int = ???
+def computeString: Throwable \/ String = ???
+def combine(i: Int, s: String): Foo = ???
+
+def computeTwoThings: Throwable \/ Foo = for {
+  i <- computeInt
+  s <- computeString
+} yield combine(i, s)
+```
+
+Now if either computation fails we'll end up with a failure (as desired). This
+kind of composition is possible with `Either`, but is not so syntactically
+convenient.
 
 Usage examples
 --------------
