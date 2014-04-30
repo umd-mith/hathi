@@ -227,7 +227,7 @@ License
 -------
 
 All code is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
-Several of the components in this repository were developed as part of a
+Most of the components in this repository were developed as part of a
 partnership between MITH and the [Princeton Prosody Archive](https://digitalhumanities.princeton.edu/ppa/).
 It is also being used in the [NEH](http://www.neh.gov/)-funded
 [Active OCR](http://www.neh.gov/) project, and in MITH's new
