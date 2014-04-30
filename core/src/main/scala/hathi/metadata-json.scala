@@ -83,7 +83,7 @@ trait MetadataJson extends ArgonautUtils with MarcUtils {
 
   implicit val RecordMetadataDecodeJson: DecodeJson[RecordMetadata] = DecodeJson(c =>
     for {
-      recordId <- (c --\ "recordURL").as[String].map(RecordId(_))
+      recordId <- (c --\ "recordURL").as[String].map(url => RecordId(url.takeRight(9)))
       url <- (c --\ "recordURL").as[java.net.URL]
       titles <- (c --\ "titles").as[List[String]]
       isbns <- (c --\ "isbns").as[List[String]]
