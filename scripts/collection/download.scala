@@ -1,13 +1,14 @@
 import dispatch._, Defaults._
 import java.io.{ File, PrintWriter }
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration.Duration
+import scala.util.{ Failure, Success }
 
 object Downloader extends App {
   val collectionId = args(0)
-  val output = new PrintWriter(new File(args(1)))
-
+  val outputFile = new File(args(1))
   val CountPattern = """.*All Items \((\d+)\).*""".r
   val IdPattern = """.*href="/cgi/pt\?id=([^"]+)".*""".r
-  val baseUrl = "http://babel.hathitrust.org/cgi/mb"
 
   def createUrl(pageNumber: Int) =
     url("http://babel.hathitrust.org/cgi/mb") <<? Map(
@@ -19,25 +20,36 @@ object Downloader extends App {
 
   def getResponse(req: Req) = {
     println(s"Downloading ${ req.url }")
-    Http(req OK as.String).apply()
+    Http(req OK as.String)
   }
 
   def getVolumeIds(body: String) = body.split("\\n").collect {
     case IdPattern(id) => id
   }
 
-  val firstBody = getResponse(createUrl(1))
-  val pageCount = firstBody.split("\\n").collectFirst {
-    case CountPattern(number) => math.ceil(number.toInt / 100.0).toInt
-  }.get
+  def getPageCount(body: String) = body.split("\\n").collectFirst {
+    case CountPattern(number) => math.ceil(number.toInt / 100.0).toInt 
+  }.fold(Future.failed[Int](new Exception("Can't find page count.")))(
+    Future.successful
+  )
 
-  getVolumeIds(firstBody).foreach(output.println)
+  val volumeIds = for {
+    firstBody <- getResponse(createUrl(1))
+    pageCount <- getPageCount(firstBody)
+    firstIds  <- Future(getVolumeIds(firstBody))
+    otherIds  <- Future.traverse(2 to pageCount)(pageNumber =>
+      getResponse(createUrl(pageNumber)).map(getVolumeIds)
+    )
+  } yield firstIds ++ otherIds.flatten 
 
-  for {
-    page <- 2 to pageCount
-    id   <- getVolumeIds(getResponse(createUrl(page)))
-  } output.println(id)
+  volumeIds.onComplete {
+    case Failure(error) => throw error
+    case Success(results) =>
+      val writer = new PrintWriter(outputFile)
+      results.foreach(writer.println)
+      writer.close()
+  }
 
-  output.close()
+  Await.ready(volumeIds, Duration.Inf)
 }
 
